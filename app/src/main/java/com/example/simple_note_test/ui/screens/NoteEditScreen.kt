@@ -34,6 +34,7 @@ fun NoteEditScreen(navController: NavController, id: String?) {
 
     val editState by viewModel.editState.collectAsState()
     val noteState by viewModel.noteState.collectAsState()
+    val generationState by viewModel.generationState.collectAsState()
     var showError by remember { mutableStateOf<String?>(null) }
     val isEditingExistingNote = id != null
 
@@ -60,6 +61,22 @@ fun NoteEditScreen(navController: NavController, id: String?) {
                 showError = state.message
             }
             else -> { }
+        }
+    }
+
+    // When generation succeeds, populate description
+    LaunchedEffect(generationState) {
+        when (generationState) {
+            is com.example.simple_note_test.util.NetworkResult.Success -> {
+                val generated = (generationState as com.example.simple_note_test.util.NetworkResult.Success).data
+                // Only set description if still empty to avoid overwriting user's typing
+                if (description.isBlank()) description = generated
+            }
+            is com.example.simple_note_test.util.NetworkResult.Error -> {
+                // expose error to UI
+                showError = (generationState as com.example.simple_note_test.util.NetworkResult.Error).message
+            }
+            else -> {}
         }
     }
 
@@ -179,6 +196,26 @@ fun NoteEditScreen(navController: NavController, id: String?) {
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                // Show generate button when title is present and body is empty
+                if (title.isNotBlank() && description.isBlank()) {
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        val isGenerating = generationState is com.example.simple_note_test.util.NetworkResult.Loading
+                        Button(
+                            onClick = { viewModel.generateBodyFromTitle(title) },
+                            enabled = !isGenerating,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            if (isGenerating) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Generating...")
+                            } else {
+                                Text("Generate body from title")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
                 BasicTextField(
                     value = description,
                     onValueChange = { description = it },

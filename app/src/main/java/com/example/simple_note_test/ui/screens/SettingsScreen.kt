@@ -31,6 +31,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.simple_note_test.ui.screens.ScreenRoutes
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +41,7 @@ fun SettingsScreen(navController: NavController) {
     val viewModel: com.example.simple_note_test.ui.screens.SettingsViewModel = hiltViewModel()
     val coroutineScope = rememberCoroutineScope()
     val profile by viewModel.profile.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -185,12 +189,7 @@ fun SettingsScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        coroutineScope.launch {
-                            viewModel.logout()
-                            navController.navigate(ScreenRoutes.Login.route) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        }
+                        showLogoutDialog = true
                     }
                     .padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -215,6 +214,56 @@ fun SettingsScreen(navController: NavController) {
                     text = "Log Out",
                     style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFCE3A54))
                 )
+            }
+        }
+    }
+
+    // Confirmation modal for logout
+    if (showLogoutDialog) {
+        ModalBottomSheet(
+            onDismissRequest = { showLogoutDialog = false },
+            containerColor = Color.Transparent
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                color = Color.White,
+                tonalElevation = 8.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Log Out", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Are you sure you want to log out from the application?", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        OutlinedButton(
+                            onClick = { showLogoutDialog = false },
+                            shape = RoundedCornerShape(24.dp),
+                            border = BorderStroke(1.dp, Color(0xFF504EC3)),
+                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                        ) {
+                            Text(text = "Cancel", color = Color(0xFF504EC3))
+                        }
+                        Button(
+                            onClick = {
+                                showLogoutDialog = false
+                                coroutineScope.launch {
+                                    viewModel.logout()
+                                    navController.navigate(ScreenRoutes.Login.route) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF504EC3)),
+                            modifier = Modifier.weight(1f).padding(start = 8.dp)
+                        ) {
+                            Text(text = "Yes", color = Color.White)
+                        }
+                    }
+                }
             }
         }
     }

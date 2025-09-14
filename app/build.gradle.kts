@@ -17,6 +17,9 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Add your Gemini API key here or override via gradle properties in CI/local environment.
+        // Replace "" with your key, or set it via signingConfig or build variants as needed.
+        buildConfigField("String", "GEMINI_API_KEY", "\"\"")
     }
 
     buildTypes {
@@ -31,6 +34,8 @@ android {
 
     buildFeatures {
         compose = true
+        // Enable generation of BuildConfig so buildConfigField(...) is allowed
+        buildConfig = true
     }
 
     // ⚠️ این بخش را کامل حذف کن:

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.simple_note_test.data.models.NoteCreateRequest
 import com.example.simple_note_test.data.models.NoteUpdateRequest
 import com.example.simple_note_test.data.repos.NotesRepository
+import com.example.simple_note_test.data.repos.GeminiRepository
 import com.example.simple_note_test.util.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,12 +14,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NoteEditViewModel @Inject constructor(private val notesRepository: NotesRepository) : ViewModel() {
+class NoteEditViewModel @Inject constructor(
+    private val notesRepository: NotesRepository,
+    private val geminiRepository: GeminiRepository
+) : ViewModel() {
     private val _editState = MutableStateFlow<NetworkResult<Unit>>(NetworkResult.Idle)
     val editState: StateFlow<NetworkResult<Unit>> = _editState
 
     private val _noteState = MutableStateFlow<NetworkResult<com.example.simple_note_test.data.models.NoteResponse>>(NetworkResult.Idle)
     val noteState: StateFlow<NetworkResult<com.example.simple_note_test.data.models.NoteResponse>> = _noteState
+
+    // Generation state for Gemini-generated body text
+    private val _generationState = MutableStateFlow<NetworkResult<String>>(NetworkResult.Idle)
+    val generationState: StateFlow<NetworkResult<String>> = _generationState
 
     fun loadNote(id: String) {
         viewModelScope.launch {
@@ -68,6 +76,19 @@ class NoteEditViewModel @Inject constructor(private val notesRepository: NotesRe
                 }
             } catch (e: Exception) {
                 _editState.value = NetworkResult.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+
+    // Generate body text from a title using GeminiRepository
+    fun generateBodyFromTitle(title: String) {
+        viewModelScope.launch {
+            _generationState.value = NetworkResult.Loading
+            try {
+                val generated = geminiRepository.generateFromTitle(title)
+                _generationState.value = NetworkResult.Success(generated)
+            } catch (e: Exception) {
+                _generationState.value = NetworkResult.Error(e.message ?: "Generation failed")
             }
         }
     }
