@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -40,6 +41,9 @@ import com.example.simple_note_test.ui.theme.GreyDark
 import com.example.simple_note_test.R
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -74,12 +78,34 @@ fun HomeScreen(navController: NavController, viewModel: com.example.simple_note_
         }
     }
 
+    // initial load
     LaunchedEffect(Unit) {
         viewModel.loadNotes()
     }
 
+    // debounce search input and trigger reload
+    LaunchedEffect(query) {
+        delay(300)
+        viewModel.loadNotes(query, page = 1, append = false)
+    }
+
     val fabSize = 64.dp
     val bottomBarHeight = 72.dp
+
+    // Lazy grid state for detecting scroll to end
+    val gridState = rememberLazyGridState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+
+    // Trigger loadNextPage when user scrolls near the end
+    LaunchedEffect(gridState, notesState) {
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collectLatest { lastVisibleIndex ->
+                val total = allNotes.size
+                if (lastVisibleIndex != null && total > 0 && lastVisibleIndex >= (total - 4) && !isLoadingMore) {
+                    viewModel.loadNextPage()
+                }
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -227,6 +253,7 @@ fun HomeScreen(navController: NavController, viewModel: com.example.simple_note_
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
+                                state = gridState,
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -244,6 +271,15 @@ fun HomeScreen(navController: NavController, viewModel: com.example.simple_note_
                                             .wrapContentHeight(),
                                         backgroundColor = color
                                     )
+                                }
+
+                                // footer item for loading more
+                                if (isLoadingMore) {
+                                    item {
+                                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                            CircularProgressIndicator()
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -5,7 +5,7 @@ import com.example.simple_note_test.data.remote.NotesApi
 import javax.inject.Inject
 
 class NotesRepository @Inject constructor(private val api: NotesApi) {
-    suspend fun getNotes(search: String? = null) = api.getNotes(search)
+    suspend fun getNotes(search: String? = null, page: Int? = null) = api.getNotes(search, page)
     suspend fun getNote(id: String) = api.getNote(id)
     suspend fun createNote(request: NoteCreateRequest) = api.createNote(request)
     suspend fun updateNote(id: String, request: NoteUpdateRequest) = api.updateNote(id, request)

@@ -6,7 +6,10 @@ import retrofit2.http.*
 
 interface NotesApi {
     @GET("api/notes/")
-    suspend fun getNotes(@Query("search") search: String? = null): NotesListResponse
+    suspend fun getNotes(
+        @Query("search") search: String? = null,
+        @Query("page") page: Int? = null
+    ): NotesListResponse
 
     @GET("api/notes/{id}/")
     suspend fun getNote(@Path("id") id: String): NoteResponse
