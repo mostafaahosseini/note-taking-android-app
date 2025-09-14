@@ -1,6 +1,5 @@
 package com.example.simple_note_test.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -13,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +31,11 @@ fun ChangePasswordScreen(navController: NavController) {
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var retypePassword by remember { mutableStateOf("") }
+
+    // visibility state for each password field
+    var showCurrent by remember { mutableStateOf(false) }
+    var showNew by remember { mutableStateOf(false) }
+    var showRetype by remember { mutableStateOf(false) }
 
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -75,27 +80,42 @@ fun ChangePasswordScreen(navController: NavController) {
                 value = currentPassword,
                 onValueChange = { currentPassword = it },
                 label = { Text("Current Password") },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showCurrent) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showCurrent = !showCurrent }) {
+                        Text(if (showCurrent) "🙈" else "👁️")
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = newPassword,
                 onValueChange = { newPassword = it },
                 label = { Text("New Password") },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showNew = !showNew }) {
+                        Text(if (showNew) "🙈" else "👁️")
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = retypePassword,
                 onValueChange = { retypePassword = it },
                 label = { Text("Retype New Password") },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showRetype) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showRetype = !showRetype }) {
+                        Text(if (showRetype) "🙈" else "👁️")
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(

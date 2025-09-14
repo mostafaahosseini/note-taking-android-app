@@ -15,6 +15,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.simple_note_test.ui.theme.GreyBase
 import com.example.simple_note_test.ui.theme.NotesShapes
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 
 @Composable
 fun NotesTextField(
@@ -25,12 +31,14 @@ fun NotesTextField(
     isPassword: Boolean = false,
     enabled: Boolean = true
 ) {
+    var showPassword by remember { mutableStateOf(false) }
+
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,
         singleLine = true,
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (isPassword && !showPassword) PasswordVisualTransformation() else VisualTransformation.None,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
         modifier = modifier
             .height(54.dp)
@@ -41,8 +49,8 @@ fun NotesTextField(
                 .height(54.dp)
                 .clip(NotesShapes.small)
                 .border(1.dp, GreyBase, NotesShapes.small)
-                .padding(horizontal = 16.dp),
-            contentAlignment = androidx.compose.ui.Alignment.CenterStart
+                .padding(start = 16.dp, end = if (isPassword) 44.dp else 16.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
             if (value.isEmpty()) {
                 Text(
@@ -51,6 +59,15 @@ fun NotesTextField(
                 )
             }
             content()
+
+            if (isPassword) {
+                IconButton(
+                    onClick = { showPassword = !showPassword },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Text(if (showPassword) "🙈" else "👁️")
+                }
+            }
         }
     }
 }

@@ -55,6 +55,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material") // Added for BorderStroke, etc.
     implementation("androidx.compose.foundation:foundation") // Added for border, PasswordVisualTransformation, etc.
+    implementation("androidx.compose.material:material-icons-extended") // icons like Visibility/VisibilityOff
     debugImplementation("androidx.compose.ui:ui-tooling")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
