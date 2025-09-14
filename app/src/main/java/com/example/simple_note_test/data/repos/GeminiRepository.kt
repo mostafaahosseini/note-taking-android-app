@@ -19,7 +19,7 @@ class GeminiRepository @Inject constructor() {
     suspend fun generateFromTitle(title: String): String = withContext(Dispatchers.IO) {
         // Prefer build config value (if set at build time), fall back to environment variable
         val buildKey = runCatching { BuildConfig.GEMINI_API_KEY }.getOrNull().orEmpty()
-        val envKey = System.getenv("GEMINI_API_KEY") ?: "AIzaSyAJxSKPTHG5MSDFXbjpFj31RZsZboQE4yw"
+        val envKey = System.getenv("GEMINI_API_KEY") ?: "your_default_key_here"
         val apiKey = when {
             buildKey.isNotBlank() -> buildKey
             envKey.isNotBlank() -> envKey
